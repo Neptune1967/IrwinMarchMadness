@@ -28,16 +28,21 @@ def update_list():
 
 def save_record():
     name = name_entry.get().strip()
+    email = email_entry.get().strip()
 
     if not name:
         messagebox.showerror("Error", "Please enter a record name.")
+        return
+
+    if not email:
+        messagebox.showerror("Error", "Please enter an email.")
         return
 
     if not selected:
         messagebox.showerror("Error", "Select at least one option.")
         return
 
-    line = ",".join([name] + list(selected))
+    line = ",".join([name, email] + list(selected))
 
     with open("records.txt", "a") as f:
         f.write(line + "\n")
@@ -45,6 +50,7 @@ def save_record():
     messagebox.showinfo("Saved", "Record saved!")
 
     name_entry.delete(0, tk.END)
+    email_entry.delete(0, tk.END)
     selected.clear()
     update_list()
 
@@ -54,12 +60,17 @@ def save_record():
 # Window
 root = tk.Tk()
 root.title("Record Creator")
-root.geometry("600x400")
+root.geometry("600x420")
 
 # Record name
 tk.Label(root, text="Record Name:").pack(anchor="w", padx=10, pady=5)
 name_entry = tk.Entry(root, width=40)
 name_entry.pack(anchor="w", padx=10)
+
+# Email field
+tk.Label(root, text="Email:").pack(anchor="w", padx=10, pady=5)
+email_entry = tk.Entry(root, width=40)
+email_entry.pack(anchor="w", padx=10)
 
 # Main frame
 frame = tk.Frame(root)
