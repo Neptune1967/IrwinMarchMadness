@@ -224,21 +224,23 @@ def save_record():
     if not email:
         messagebox.showerror("Error", "Please enter an email.")
         return
-    
     if len(selected) != 10:
         messagebox.showerror("Error", "You must select exactly 10 teams before saving.")
         return
     
-    # Save name, email, and selected teams with seed
+    # Inverted logic: checked = external, unchecked = company
+    filename = "records_external.txt" if is_external_var.get() else "records_company.txt"
+    
     line = ",".join([name, email] + [f"{t.name} ({t.seed})" for t in selected])
-    with open("records.txt", "a") as f:
+    with open(filename, "a") as f:
         f.write(line + "\n")
     
-    messagebox.showinfo("Saved", "Record saved!")
+    messagebox.showinfo("Saved", f"Record saved to {filename}!")
     
-    # Reset entries and buttons
+    # Reset entries (name/email), but keep checkbox as is
     name_entry.delete(0, tk.END)
     email_entry.delete(0, tk.END)
+    
     selected.clear()
     update_list()
     for btn in buttons:
@@ -247,39 +249,41 @@ def save_record():
 def show_leaderboard():
     leaderboard_win = tk.Toplevel(root)
     leaderboard_win.title("Leaderboard")
-    leaderboard_win.geometry("400x400")
+    leaderboard_win.geometry("500x500")
     
-    tk.Label(leaderboard_win, text="Leaderboard", font=("Arial", 14, "bold")).pack(pady=10)
+    tk.Label(leaderboard_win, text="Leaderboard", font=("Arial", 14, "bold")).pack(pady=5)
     
-    # Scrollable Text widget
-    text_widget = tk.Text(leaderboard_win, width=50, height=20, state="normal")
+    text_widget = tk.Text(leaderboard_win, width=60, height=30, state="normal")
     text_widget.pack(padx=10, pady=10, fill="both", expand=True)
     
-    leaderboard = []
-    try:
-        with open("records.txt", "r") as f:
-            import csv
-            reader = csv.reader(f)
-            for row in reader:
-                name = row[0]
-                team_entries = row[2:]
-                score = 0
-                for entry in team_entries:
-                    if "(" in entry:
-                        team_name = entry.rsplit("(", 1)[0].strip()
-                        team_obj = team_lookup.get(team_name)
-                        if team_obj:
-                            score += (team_obj.seed + 3) * team_obj.counter
-                leaderboard.append((name, score))
-        leaderboard.sort(key=lambda x: x[1], reverse=True)
-    except FileNotFoundError:
-        text_widget.insert(tk.END, "No records found.\n")
-        return
+    for filename, title in [("records_company.txt", "Company Employees"), ("records_external.txt", "External Users")]:
+        text_widget.insert(tk.END, f"{title}:\n")
+        leaderboard = []
+        try:
+            with open(filename, "r") as f:
+                import csv
+                reader = csv.reader(f)
+                for row in reader:
+                    name = row[0]
+                    team_entries = row[2:]
+                    score = 0
+                    for entry in team_entries:
+                        if "(" in entry:
+                            team_name = entry.rsplit("(", 1)[0].strip()
+                            team_obj = team_lookup.get(team_name)
+                            if team_obj:
+                                score += (team_obj.seed + 3) * team_obj.counter
+                    leaderboard.append((name, score))
+            leaderboard.sort(key=lambda x: x[1], reverse=True)
+        except FileNotFoundError:
+            text_widget.insert(tk.END, "No records found.\n")
+            continue
+        
+        for rank, (name, score) in enumerate(leaderboard, start=1):
+            text_widget.insert(tk.END, f"{rank}. {name} — {score} points\n")
+        text_widget.insert(tk.END, "\n")
     
-    for rank, (name, score) in enumerate(leaderboard, start=1):
-        text_widget.insert(tk.END, f"{rank}. {name} — {score} points\n")
-    
-    text_widget.config(state="disabled")  # make read-only
+    text_widget.config(state="disabled")
 
 # ----------------- GUI -----------------
 root = tk.Tk()
@@ -287,23 +291,31 @@ root.title("March Madness Selector")
 root.geometry("900x720")
 
 # ---------- Top Section ----------
-# Top frame for Record Name and Email
+# Top frame for Record Name, Email, Checkbox, and Leaderboard button
 top_frame = tk.Frame(root)
 top_frame.pack(anchor="w", padx=10, pady=5)
 
-# Record Name label and entry
-tk.Label(top_frame, text="Name:").grid(row=0, column=0, sticky="w", padx=5, pady=2)
-name_entry = tk.Entry(top_frame, width=30)
+# Record Name
+tk.Label(top_frame, text="Record Name:").grid(row=0, column=0, sticky="w", padx=5, pady=2)
+name_entry = tk.Entry(top_frame, width=25)
 name_entry.grid(row=0, column=1, padx=5, pady=2)
 
-# Email label and entry (inline)
+# Email
 tk.Label(top_frame, text="Email:").grid(row=0, column=2, sticky="w", padx=5, pady=2)
-email_entry = tk.Entry(top_frame, width=30)
+email_entry = tk.Entry(top_frame, width=25)
 email_entry.grid(row=0, column=3, padx=5, pady=2)
 
-# Leaderboard button (optional, inline)
-leaderboard_btn = tk.Button(top_frame, text="Show Leaderboard", command=show_leaderboard)
-leaderboard_btn.grid(row=0, column=4, padx=5, pady=2)
+# Checkbox now means "External User"
+is_external_var = tk.BooleanVar(value=False)  # default unchecked = company
+
+employee_checkbox = tk.Checkbutton(
+    top_frame, text="External User", variable=is_external_var
+)
+employee_checkbox.grid(row=0, column=4, padx=5, pady=2)
+
+# Leaderboard button
+leaderboard_btn = tk.Button(top_frame, text="Show Leaderboard", command=show_leaderboard, bg="yellow")
+leaderboard_btn.grid(row=0, column=5, padx=5, pady=2)
 
 # ---------- Main Content ----------
 frame = tk.Frame(root)

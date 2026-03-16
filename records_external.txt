@@ -1,0 +1,3 @@
+g,g,Nebraska (4),Florida (1),Iowa St. (2),Clemson (8),Texas A&M (10),North Carolina (6),Houston (2),Vanderbilt (5),High Point (12),Illinois (3)
+ex,ex,Nebraska (4),Florida (1),Saint Mary's (7),Clemson (8),Texas A&M (10),North Carolina (6),Iowa (9),Houston (2),Vanderbilt (5),Illinois (3)
+banesad,asdasd,Nebraska (4),Florida (1),Saint Mary's (7),Clemson (8),Texas A&M (10),North Carolina (6),Iowa (9),Houston (2),Vanderbilt (5),Illinois (3)
