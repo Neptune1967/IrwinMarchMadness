@@ -291,12 +291,12 @@ root.title("March Madness Selector")
 root.geometry("900x720")
 
 # ---------- Top Section ----------
-# Top frame for Record Name, Email, Checkbox, and Leaderboard button
+# Top frame for Record Name, Email, Checkbox, Leaderboard, Save
 top_frame = tk.Frame(root)
 top_frame.pack(anchor="w", padx=10, pady=5)
 
 # Record Name
-tk.Label(top_frame, text="Record Name:").grid(row=0, column=0, sticky="w", padx=5, pady=2)
+tk.Label(top_frame, text="Name:").grid(row=0, column=0, sticky="w", padx=5, pady=2)
 name_entry = tk.Entry(top_frame, width=25)
 name_entry.grid(row=0, column=1, padx=5, pady=2)
 
@@ -305,17 +305,18 @@ tk.Label(top_frame, text="Email:").grid(row=0, column=2, sticky="w", padx=5, pad
 email_entry = tk.Entry(top_frame, width=25)
 email_entry.grid(row=0, column=3, padx=5, pady=2)
 
-# Checkbox now means "External User"
-is_external_var = tk.BooleanVar(value=False)  # default unchecked = company
-
-employee_checkbox = tk.Checkbutton(
-    top_frame, text="External User", variable=is_external_var
-)
+# External User checkbox
+is_external_var = tk.BooleanVar(value=False)
+employee_checkbox = tk.Checkbutton(top_frame, text="External User", variable=is_external_var)
 employee_checkbox.grid(row=0, column=4, padx=5, pady=2)
 
 # Leaderboard button
-leaderboard_btn = tk.Button(top_frame, text="Show Leaderboard", command=show_leaderboard, bg="yellow")
+leaderboard_btn = tk.Button(top_frame, text="Show Leaderboard", command=show_leaderboard)
 leaderboard_btn.grid(row=0, column=5, padx=5, pady=2)
+
+# Save button (right after leaderboard)
+save_btn = tk.Button(top_frame, text="Save", command=save_record, width=10, bg="lightgreen")
+save_btn.grid(row=0, column=6, padx=5, pady=2)
 
 # ---------- Main Content ----------
 frame = tk.Frame(root)
@@ -342,8 +343,6 @@ tk.Label(list_frame, text="Selected Teams:").pack()
 listbox = tk.Listbox(list_frame, width=30)
 listbox.pack()
 
-# Save button
-save_btn = tk.Button(root, text="Save", command=save_record, width=10)
-save_btn.pack(side="right", padx=10, pady=10)
+
 
 root.mainloop()
