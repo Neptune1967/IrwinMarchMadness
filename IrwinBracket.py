@@ -179,17 +179,68 @@ def save_record():
 
     root.update_idletasks()
 
+def mark_as_paid(player_name):
+    for filename in ["records_company.txt", "records_external.txt"]:
+
+        try:
+            rows = []
+
+            with open(filename, "r") as f:
+                reader = csv.reader(f)
+                for row in reader:
+                    if row[0] == player_name:
+                        row[2] = "PAID"
+                    rows.append(row)
+
+            with open(filename, "w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerows(rows)
+
+        except FileNotFoundError:
+            pass
+
 def show_leaderboard():
     leaderboard_win = tk.Toplevel(root)
     leaderboard_win.title("Leaderboard")
-    leaderboard_win.geometry("500x500")
+    leaderboard_win.geometry("700x700")
 
     tk.Label(leaderboard_win, text="Leaderboard", font=("Arial", 14, "bold")).pack(pady=5)
 
-    text_widget = tk.Text(leaderboard_win, width=60, height=30)
-    text_widget.pack(padx=10, pady=10, fill="both", expand=True)
+    text_frame = tk.Frame(leaderboard_win)
+    text_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
+    scrollbar = tk.Scrollbar(text_frame)
+    scrollbar.pack(side="right", fill="y")
+
+    text_widget = tk.Text(text_frame, width=60, yscrollcommand=scrollbar.set)
+    text_widget.pack(side="left", fill="both", expand=True)
+    text_widget.bind("<MouseWheel>", lambda e: text_widget.yview_scroll(int(-1*(e.delta/120)), "units"))
+
+    scrollbar.config(command=text_widget.yview)
+
+    # ---- ADD THE PAY FRAME HERE ----
+    pay_frame = tk.Frame(leaderboard_win)
+    pay_frame.pack(pady=5)
+
+    tk.Label(pay_frame, text="Mark Player as Paid:").pack(side="left")
+
+    player_entry = tk.Entry(pay_frame)
+    player_entry.pack(side="left", padx=5)
+
+    tk.Button(
+        pay_frame,
+        text="Mark Paid",
+        command=lambda: (
+            mark_as_paid(player_entry.get().strip()),
+            messagebox.showinfo("Updated", "Player marked as PAID")
+        )
+    ).pack(side="left")
+
+    # leaderboard refresh function
     def refresh_leaderboard():
+        # Save current scroll position
+        scroll_pos = text_widget.yview()
+
         text_widget.config(state="normal")
         text_widget.delete("1.0", tk.END)
 
@@ -199,6 +250,7 @@ def show_leaderboard():
                                 ("records_external.txt", "External Users")]:
 
             text_widget.insert(tk.END, f"{title}:\n")
+
             paid_leaderboard = []
 
             try:
@@ -226,7 +278,6 @@ def show_leaderboard():
                             unpaid_players.append(name)
 
             except FileNotFoundError:
-                text_widget.insert(tk.END, "No records found.\n")
                 continue
 
             paid_leaderboard.sort(key=lambda x: x[1], reverse=True)
@@ -241,37 +292,15 @@ def show_leaderboard():
         for name in unpaid_players:
             text_widget.insert(tk.END, f"{name}\n")
 
+        # Restore previous scroll position
+        text_widget.yview_moveto(scroll_pos[0])
         text_widget.config(state="disabled")
 
-        # Refresh every 2 seconds
         leaderboard_win.after(2000, refresh_leaderboard)
 
     refresh_leaderboard()
 
-    paid_leaderboard = []
-    unpaid_players = []
 
-    with open(filename, "r") as f:
-        reader = csv.reader(f)
-        for row in reader:
-            name = row[0]
-            paid_status = row[2]
-            team_entries = row[3:]
-
-            score = 0
-            for entry in team_entries:
-                if "(" in entry:
-                    team_name = entry.rsplit("(", 1)[0].strip()
-                    team_obj = team_lookup.get(team_name)
-                    if team_obj:
-                        score += (team_obj.seed + 3) * team_obj.counter
-
-            if paid_status == "PAID":
-                paid_leaderboard.append((name, score))
-            else:
-                unpaid_players.append(name)
-
-    paid_leaderboard.sort(key=lambda x: x[1], reverse=True)
 
 def show_emails():
     email_win = tk.Toplevel(root)
