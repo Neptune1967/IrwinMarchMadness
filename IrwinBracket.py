@@ -4,10 +4,11 @@ import requests
 page_to_scrape = requests.get("https://www.ncaa.com/march-madness-live/bracket")
 
 class Player:
-    def __init__(self, name, email, teams):
-        self.name = name  # String attribute
-        self.email = email  # String attribute
-        self.teams = teams  # Array attribute
+    def __init__(self, name, email, teams, paid=True):
+        self.name = name
+        self.email = email
+        self.teams = teams
+        self.paid = paid
 
 class Team:
     def __init__(self, name, seed):
@@ -159,7 +160,9 @@ def save_record():
     # Inverted logic: checked = external, unchecked = company
     filename = "records_external.txt" if is_external_var.get() else "records_company.txt"
     
-    line = ",".join([name, email] + [f"{t.name} ({t.seed})" for t in selected])
+    paid_status = "PAID" if is_paid_var.get() else "UNPAID"
+
+    line = ",".join([name, email, paid_status] + [f"{t.name} ({t.seed})" for t in selected])
     with open(filename, "a") as f:
         f.write(line + "\n")
     
@@ -174,6 +177,8 @@ def save_record():
     for btn in buttons:
         btn.config(relief="raised", bg="SystemButtonFace")
 
+    root.update_idletasks()
+
 def show_leaderboard():
     leaderboard_win = tk.Toplevel(root)
     leaderboard_win.title("Leaderboard")
@@ -181,48 +186,121 @@ def show_leaderboard():
 
     tk.Label(leaderboard_win, text="Leaderboard", font=("Arial", 14, "bold")).pack(pady=5)
 
-    text_widget = tk.Text(leaderboard_win, width=60, height=30, state="normal")
+    text_widget = tk.Text(leaderboard_win, width=60, height=30)
     text_widget.pack(padx=10, pady=10, fill="both", expand=True)
 
     def refresh_leaderboard():
         text_widget.config(state="normal")
         text_widget.delete("1.0", tk.END)
 
+        unpaid_players = []
+
         for filename, title in [("records_company.txt", "Company Employees"),
                                 ("records_external.txt", "External Users")]:
+
             text_widget.insert(tk.END, f"{title}:\n")
-            leaderboard = []
+            paid_leaderboard = []
+
             try:
-                import csv
                 with open(filename, "r") as f:
                     reader = csv.reader(f)
+
                     for row in reader:
                         name = row[0]
-                        team_entries = row[2:]
+                        paid_status = row[2]
+                        team_entries = row[3:]
+
                         score = 0
+
                         for entry in team_entries:
                             if "(" in entry:
                                 team_name = entry.rsplit("(", 1)[0].strip()
                                 team_obj = team_lookup.get(team_name)
+
                                 if team_obj:
                                     score += (team_obj.seed + 3) * team_obj.counter
-                        leaderboard.append((name, score))
-                leaderboard.sort(key=lambda x: x[1], reverse=True)
+
+                        if paid_status == "PAID":
+                            paid_leaderboard.append((name, score))
+                        else:
+                            unpaid_players.append(name)
+
             except FileNotFoundError:
                 text_widget.insert(tk.END, "No records found.\n")
                 continue
 
-            for rank, (name, score) in enumerate(leaderboard, start=1):
+            paid_leaderboard.sort(key=lambda x: x[1], reverse=True)
+
+            for rank, (name, score) in enumerate(paid_leaderboard, start=1):
                 text_widget.insert(tk.END, f"{rank}. {name} — {score} points\n")
+
             text_widget.insert(tk.END, "\n")
+
+        text_widget.insert(tk.END, "Unpaid Players:\n")
+
+        for name in unpaid_players:
+            text_widget.insert(tk.END, f"{name}\n")
 
         text_widget.config(state="disabled")
 
-        # auto-refresh every 2 seconds
+        # Refresh every 2 seconds
         leaderboard_win.after(2000, refresh_leaderboard)
 
-    refresh_leaderboard()  # initial load
+    refresh_leaderboard()
 
+    paid_leaderboard = []
+    unpaid_players = []
+
+    with open(filename, "r") as f:
+        reader = csv.reader(f)
+        for row in reader:
+            name = row[0]
+            paid_status = row[2]
+            team_entries = row[3:]
+
+            score = 0
+            for entry in team_entries:
+                if "(" in entry:
+                    team_name = entry.rsplit("(", 1)[0].strip()
+                    team_obj = team_lookup.get(team_name)
+                    if team_obj:
+                        score += (team_obj.seed + 3) * team_obj.counter
+
+            if paid_status == "PAID":
+                paid_leaderboard.append((name, score))
+            else:
+                unpaid_players.append(name)
+
+    paid_leaderboard.sort(key=lambda x: x[1], reverse=True)
+
+def show_emails():
+    email_win = tk.Toplevel(root)
+    email_win.title("All Emails")
+    email_win.geometry("400x500")
+
+    tk.Label(email_win, text="All Unique Emails (Ctrl + a)", font=("Arial", 14, "bold")).pack(pady=5)
+
+    text_widget = tk.Text(email_win, width=50, height=30, state="normal")
+    text_widget.pack(padx=10, pady=10, fill="both", expand=True)
+
+    emails = set()  # ensures uniqueness
+
+    for filename in ["records_company.txt", "records_external.txt"]:
+        try:
+            with open(filename, "r") as f:
+                reader = csv.reader(f)
+                for row in reader:
+                    if len(row) > 1:
+                        emails.add(row[1].strip())
+        except FileNotFoundError:
+            pass
+
+    text_widget.delete("1.0", tk.END)
+
+    for email in sorted(emails):
+        text_widget.insert(tk.END, f"{email}\n")
+
+    text_widget.config(state="disabled")
 # ----------------- GUI -----------------
 root = tk.Tk()
 root.title("March Madness Selector")
@@ -248,13 +326,21 @@ is_external_var = tk.BooleanVar(value=False)
 employee_checkbox = tk.Checkbutton(top_frame, text="External User", variable=is_external_var)
 employee_checkbox.grid(row=0, column=4, padx=5, pady=2)
 
+# Paid checkbox (checked by default)
+is_paid_var = tk.BooleanVar(value=True)
+paid_checkbox = tk.Checkbutton(top_frame, text="Paid", variable=is_paid_var)
+paid_checkbox.grid(row=0, column=5, padx=5, pady=2)
+
 # Leaderboard button
 leaderboard_btn = tk.Button(top_frame, text="Show Leaderboard", command=show_leaderboard)
-leaderboard_btn.grid(row=0, column=5, padx=5, pady=2)
+leaderboard_btn.grid(row=0, column=6, padx=5, pady=2)
+
+emails_btn = tk.Button(top_frame, text="Show Emails", command=show_emails)
+emails_btn.grid(row=0, column=7, padx=5, pady=2)
 
 # Save button (right after leaderboard)
 save_btn = tk.Button(top_frame, text="Save", command=save_record, width=10, bg="lightgreen")
-save_btn.grid(row=0, column=6, padx=5, pady=2)
+save_btn.grid(row=0, column=8, padx=5, pady=2)
 
 # ---------- Main Content ----------
 frame = tk.Frame(root)
