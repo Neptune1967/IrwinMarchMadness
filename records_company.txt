@@ -1,3 +1,5 @@
 f,d,Santa Clara (10),Nebraska (4),Georgia (8),Saint Mary's (7),Clemson (8),Saint Louis (9),Texas A&M (10),North Carolina (6),Iowa (9),Vanderbilt (5)
 test in,test,Arizona (1),Florida (1),Iowa St. (2),Saint Mary's (7),Tennessee (6),Virginia (3),Texas Tech (5),Purdue (2),Illinois (3),Alabama (4)
 live test,test,Arizona (1),Howard (16),Purdue (2),Queens (N.C.) (15),Hawaii (13),Long Island (16),Siena (16),Kennesaw St. (14),Prairie View A&M (16),Lehigh (16)
+live,sdf,Illinois (3),Michigan (1),Florida (1),Iowa St. (2),Arizona (1),Virginia (3),Houston (2),Gonzaga (3),Arkansas (4),Purdue (2)
+Another Live,weewrf,Duke (1),UConn (2),Wisconsin (5),Kansas (4),Arizona (1),St. John's (5),Michigan St. (3),Gonzaga (3),Arkansas (4),Purdue (2)

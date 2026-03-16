@@ -250,40 +250,50 @@ def show_leaderboard():
     leaderboard_win = tk.Toplevel(root)
     leaderboard_win.title("Leaderboard")
     leaderboard_win.geometry("500x500")
-    
+
     tk.Label(leaderboard_win, text="Leaderboard", font=("Arial", 14, "bold")).pack(pady=5)
-    
+
     text_widget = tk.Text(leaderboard_win, width=60, height=30, state="normal")
     text_widget.pack(padx=10, pady=10, fill="both", expand=True)
-    
-    for filename, title in [("records_company.txt", "Company Employees"), ("records_external.txt", "External Users")]:
-        text_widget.insert(tk.END, f"{title}:\n")
-        leaderboard = []
-        try:
-            with open(filename, "r") as f:
+
+    def refresh_leaderboard():
+        text_widget.config(state="normal")
+        text_widget.delete("1.0", tk.END)
+
+        for filename, title in [("records_company.txt", "Company Employees"),
+                                ("records_external.txt", "External Users")]:
+            text_widget.insert(tk.END, f"{title}:\n")
+            leaderboard = []
+            try:
                 import csv
-                reader = csv.reader(f)
-                for row in reader:
-                    name = row[0]
-                    team_entries = row[2:]
-                    score = 0
-                    for entry in team_entries:
-                        if "(" in entry:
-                            team_name = entry.rsplit("(", 1)[0].strip()
-                            team_obj = team_lookup.get(team_name)
-                            if team_obj:
-                                score += (team_obj.seed + 3) * team_obj.counter
-                    leaderboard.append((name, score))
-            leaderboard.sort(key=lambda x: x[1], reverse=True)
-        except FileNotFoundError:
-            text_widget.insert(tk.END, "No records found.\n")
-            continue
-        
-        for rank, (name, score) in enumerate(leaderboard, start=1):
-            text_widget.insert(tk.END, f"{rank}. {name} — {score} points\n")
-        text_widget.insert(tk.END, "\n")
-    
-    text_widget.config(state="disabled")
+                with open(filename, "r") as f:
+                    reader = csv.reader(f)
+                    for row in reader:
+                        name = row[0]
+                        team_entries = row[2:]
+                        score = 0
+                        for entry in team_entries:
+                            if "(" in entry:
+                                team_name = entry.rsplit("(", 1)[0].strip()
+                                team_obj = team_lookup.get(team_name)
+                                if team_obj:
+                                    score += (team_obj.seed + 3) * team_obj.counter
+                        leaderboard.append((name, score))
+                leaderboard.sort(key=lambda x: x[1], reverse=True)
+            except FileNotFoundError:
+                text_widget.insert(tk.END, "No records found.\n")
+                continue
+
+            for rank, (name, score) in enumerate(leaderboard, start=1):
+                text_widget.insert(tk.END, f"{rank}. {name} — {score} points\n")
+            text_widget.insert(tk.END, "\n")
+
+        text_widget.config(state="disabled")
+
+        # auto-refresh every 2 seconds
+        leaderboard_win.after(2000, refresh_leaderboard)
+
+    refresh_leaderboard()  # initial load
 
 # ----------------- GUI -----------------
 root = tk.Tk()
