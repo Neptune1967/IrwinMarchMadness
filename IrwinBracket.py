@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 import requests
-#import re
 
 page_to_scrape = requests.get("https://www.ncaa.com/march-madness-live/bracket")
 
@@ -14,7 +13,7 @@ class Team:
     def __init__(self, name, seed):
         self.name = name
         self.seed = seed
-        self.counter = 0  # counts appearances of the team name
+        self.counter = -1  # counts appearances of the team name
 
     def __repr__(self):
         return f"{self.name} ({self.seed}) [{self.counter}]"
@@ -40,21 +39,27 @@ for team, seed in zip(teams[:68], seeds[:68]):
     team_obj = Team(team, int(seed))
     teams_list.append(team_obj)
 
-# Build a list of visible team names
+team_lookup = {team.name: team for team in teams_list}
+# Build list of visible team names
 visible_team_names = [team for team, seed in zip(teams[:68], seeds[:68])]
 
-# Count exact occurrences
-for team_obj in teams_list:
-    team_obj.counter = visible_team_names.count(team_obj.name)
-
-# Reduce counters for teams in the play-in game-pods
-game_pods_teams = [p.get_text(strip=True) 
-                   for p in soup.select(".game-pods p.body.body_2") 
+# Identify play-in teams
+game_pods_teams = [p.get_text(strip=True)
+                   for p in soup.select(".game-pods p.body.body_2")
                    if p.get_text(strip=True)]
 
+# Initialize counters
 for team_obj in teams_list:
     if team_obj.name in game_pods_teams:
-        team_obj.counter = 0
+        team_obj.counter = -2
+    else:
+        team_obj.counter = -1
+
+# Add +1 for every appearance
+for name in visible_team_names:
+    team_obj = team_lookup.get(name)
+    if team_obj:
+        team_obj.counter += 1
 
 # Print results
 if teams_list:
