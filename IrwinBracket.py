@@ -34,7 +34,7 @@ team_counters = {
     "SIU Edwardsville": 0, "UCLA": 0, "Xavier": 0, "Texas A&M": 0, "High Point": 0, "Montana": 0,
     "VCU": 0, "Clemson": 0, "St. John's": 0, "Illinois": 0, "American": -1,
     "Mount St. Mary's": -1, "Alabama St.": -1, "Saint Francis U": -1, "UC San Diego": 0,
-    "Kansas": 0, "Tennessee": 0, "Oregon": 0, "Michigan": 0,
+    "Kansas": 0, "Tennessee": 0, "Oregon": 0, "Michigan": 1,
     "Yale": 0, "Missouri": 0, "UNC Wilmington": 0,
     "Omaha": 0, "Georgia": 0, "Utah St.": 0, "Wofford": 0, "Texas": -1, "San Diego St.": -1,
 }
@@ -89,8 +89,17 @@ print(count)
 
 #print(AllSeeds)
 
+soup = BeautifulSoup(page_to_scrape.text, "html.parser")
 
+# team names
+teams = [p.get_text(strip=True) for p in soup.select("p.body.body_2") if p.get_text(strip=True)]
 
+# seeds (only digits)
+seeds = [s.get_text(strip=True) for s in soup.select("span.overline") if s.get_text(strip=True).isdigit()]
+
+# pair them
+for team, seed in zip(teams, seeds):
+    print(f"{team} {seed}", end=", ")
 
 ## Example string
 ##text = "This is an example <!--[first]--> and another <!--[second]--> with extra <!--[third]< more."
