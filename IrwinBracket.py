@@ -186,25 +186,25 @@ for rank, (name, score) in enumerate(leaderboard, start=1):
 #####################################################
 import tkinter as tk
 from tkinter import messagebox
+import csv
 
-# Assume teams_list already contains your Team objects
-# Example:
-# class Team:
-#     def __init__(self, name, seed):
-#         self.name = name
-#         self.seed = seed
-#         self.counter = 1
-
-# Sort teams by seed
+# ----------------- Use your actual teams_list from scraping -----------------
+# teams_list = [...]  <- This comes from your scraping code
 teams_list_sorted = sorted(teams_list, key=lambda t: t.seed)
+team_lookup = {team.name: team for team in teams_list}
 
-selected = set()  # stores Team objects
+selected = set()
+MAX_SELECTION = 10
 
+# ----------------- Functions -----------------
 def toggle(team_obj, btn):
     if team_obj in selected:
         selected.remove(team_obj)
         btn.config(relief="raised", bg="SystemButtonFace")
     else:
+        if len(selected) >= MAX_SELECTION:
+            messagebox.showwarning("Limit reached", f"You can only select {MAX_SELECTION} teams.")
+            return
         selected.add(team_obj)
         btn.config(relief="sunken", bg="lightblue")
     update_list()
@@ -217,26 +217,23 @@ def update_list():
 def save_record():
     name = name_entry.get().strip()
     email = email_entry.get().strip()
-
+    
     if not name:
         messagebox.showerror("Error", "Please enter a record name.")
         return
-
     if not email:
         messagebox.showerror("Error", "Please enter an email.")
         return
-
     if not selected:
         messagebox.showerror("Error", "Select at least one team.")
         return
-
-    # Save name, email, and selected teams with seed
+    
     line = ",".join([name, email] + [f"{t.name} ({t.seed})" for t in selected])
     with open("records.txt", "a") as f:
         f.write(line + "\n")
-
+    
     messagebox.showinfo("Saved", "Record saved!")
-
+    
     # Reset entries and buttons
     name_entry.delete(0, tk.END)
     email_entry.delete(0, tk.END)
@@ -245,48 +242,68 @@ def save_record():
     for btn in buttons:
         btn.config(relief="raised", bg="SystemButtonFace")
 
-MAX_SELECTION = 10
-
-def toggle(team_obj, btn):
-    if team_obj in selected:
-        # Deselecting a team is always allowed
-        selected.remove(team_obj)
-        btn.config(relief="raised", bg="SystemButtonFace")
-    else:
-        # Check max limit
-        if len(selected) >= MAX_SELECTION:
-            messagebox.showwarning("Limit reached", f"You can only select {MAX_SELECTION} teams.")
-            return
-        selected.add(team_obj)
-        btn.config(relief="sunken", bg="lightblue")
+def show_leaderboard():
+    leaderboard_win = tk.Toplevel(root)
+    leaderboard_win.title("Leaderboard")
+    leaderboard_win.geometry("400x400")
     
-    update_list()
-# ----------------- GUI -----------------
+    tk.Label(leaderboard_win, text="Leaderboard", font=("Arial", 14, "bold")).pack(pady=10)
+    lb_listbox = tk.Listbox(leaderboard_win, width=50)
+    lb_listbox.pack(padx=10, pady=10, fill="both", expand=True)
+    
+    leaderboard = []
+    try:
+        with open("records.txt", "r") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                name = row[0]
+                team_entries = row[2:]
+                score = 0
+                for entry in team_entries:
+                    if "(" in entry:
+                        team_name = entry.rsplit("(", 1)[0].strip()
+                        team_obj = team_lookup.get(team_name)
+                        if team_obj:
+                            score += (team_obj.seed + 3) * team_obj.counter
+                leaderboard.append((name, score))
+        leaderboard.sort(key=lambda x: x[1], reverse=True)
+    except FileNotFoundError:
+        messagebox.showinfo("Info", "No records found.")
+        return
+    
+    for rank, (name, score) in enumerate(leaderboard, start=1):
+        lb_listbox.insert(tk.END, f"{rank}. {name} — {score} points")
 
+# ----------------- GUI -----------------
 root = tk.Tk()
 root.title("March Madness Selector")
-root.geometry("900x600")  # wider to fit multiple columns
+root.geometry("900x600")
 
-# Record name
-tk.Label(root, text="Record Name:").pack(anchor="w", padx=10, pady=5)
-name_entry = tk.Entry(root, width=40)
-name_entry.pack(anchor="w", padx=10)
+# ---------- Top Section ----------
+top_frame = tk.Frame(root)
+top_frame.pack(anchor="w", padx=10, pady=5)
 
-# Email field
+tk.Label(top_frame, text="Record Name:").grid(row=0, column=0, sticky="w")
+name_entry = tk.Entry(top_frame, width=30)
+name_entry.grid(row=0, column=1, padx=5)
+
+leaderboard_btn = tk.Button(top_frame, text="Show Leaderboard", command=show_leaderboard, bg="yellow")
+leaderboard_btn.grid(row=0, column=2, padx=5)
+
 tk.Label(root, text="Email:").pack(anchor="w", padx=10, pady=5)
 email_entry = tk.Entry(root, width=40)
 email_entry.pack(anchor="w", padx=10)
 
-# Main frame
+# ---------- Main Content ----------
 frame = tk.Frame(root)
 frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-# Left side buttons (multi-column)
+# Left side: Team buttons in multi-column layout
 button_frame = tk.Frame(frame)
 button_frame.pack(side="left", fill="both", expand=True)
 
 buttons = []
-cols = 4  # number of columns for buttons
+cols = 4
 for idx, team_obj in enumerate(teams_list_sorted):
     b = tk.Button(button_frame, text=f"{team_obj.name} ({team_obj.seed})", width=20)
     b.config(command=lambda t=team_obj, btn=b: toggle(t, btn))
@@ -295,10 +312,9 @@ for idx, team_obj in enumerate(teams_list_sorted):
     b.grid(row=row, column=col, padx=5, pady=5, sticky="w")
     buttons.append(b)
 
-# Right side list
+# Right side: Selected teams list
 list_frame = tk.Frame(frame)
 list_frame.pack(side="right", fill="y")
-
 tk.Label(list_frame, text="Selected:").pack()
 listbox = tk.Listbox(list_frame, width=30)
 listbox.pack()
@@ -308,5 +324,3 @@ save_btn = tk.Button(root, text="Save", command=save_record, width=10)
 save_btn.pack(side="right", padx=10, pady=10)
 
 root.mainloop()
-
-
