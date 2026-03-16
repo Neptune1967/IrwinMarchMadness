@@ -224,10 +224,12 @@ def save_record():
     if not email:
         messagebox.showerror("Error", "Please enter an email.")
         return
-    if not selected:
-        messagebox.showerror("Error", "Select at least one team.")
+    
+    if len(selected) != 10:
+        messagebox.showerror("Error", "You must select exactly 10 teams before saving.")
         return
     
+    # Save name, email, and selected teams with seed
     line = ",".join([name, email] + [f"{t.name} ({t.seed})" for t in selected])
     with open("records.txt", "a") as f:
         f.write(line + "\n")
@@ -248,12 +250,15 @@ def show_leaderboard():
     leaderboard_win.geometry("400x400")
     
     tk.Label(leaderboard_win, text="Leaderboard", font=("Arial", 14, "bold")).pack(pady=10)
-    lb_listbox = tk.Listbox(leaderboard_win, width=50)
-    lb_listbox.pack(padx=10, pady=10, fill="both", expand=True)
+    
+    # Scrollable Text widget
+    text_widget = tk.Text(leaderboard_win, width=50, height=20, state="normal")
+    text_widget.pack(padx=10, pady=10, fill="both", expand=True)
     
     leaderboard = []
     try:
         with open("records.txt", "r") as f:
+            import csv
             reader = csv.reader(f)
             for row in reader:
                 name = row[0]
@@ -268,31 +273,37 @@ def show_leaderboard():
                 leaderboard.append((name, score))
         leaderboard.sort(key=lambda x: x[1], reverse=True)
     except FileNotFoundError:
-        messagebox.showinfo("Info", "No records found.")
+        text_widget.insert(tk.END, "No records found.\n")
         return
     
     for rank, (name, score) in enumerate(leaderboard, start=1):
-        lb_listbox.insert(tk.END, f"{rank}. {name} — {score} points")
+        text_widget.insert(tk.END, f"{rank}. {name} — {score} points\n")
+    
+    text_widget.config(state="disabled")  # make read-only
 
 # ----------------- GUI -----------------
 root = tk.Tk()
 root.title("March Madness Selector")
-root.geometry("900x600")
+root.geometry("900x720")
 
 # ---------- Top Section ----------
+# Top frame for Record Name and Email
 top_frame = tk.Frame(root)
 top_frame.pack(anchor="w", padx=10, pady=5)
 
-tk.Label(top_frame, text="Record Name:").grid(row=0, column=0, sticky="w")
+# Record Name label and entry
+tk.Label(top_frame, text="Name:").grid(row=0, column=0, sticky="w", padx=5, pady=2)
 name_entry = tk.Entry(top_frame, width=30)
-name_entry.grid(row=0, column=1, padx=5)
+name_entry.grid(row=0, column=1, padx=5, pady=2)
 
-leaderboard_btn = tk.Button(top_frame, text="Show Leaderboard", command=show_leaderboard, bg="yellow")
-leaderboard_btn.grid(row=0, column=2, padx=5)
+# Email label and entry (inline)
+tk.Label(top_frame, text="Email:").grid(row=0, column=2, sticky="w", padx=5, pady=2)
+email_entry = tk.Entry(top_frame, width=30)
+email_entry.grid(row=0, column=3, padx=5, pady=2)
 
-tk.Label(root, text="Email:").pack(anchor="w", padx=10, pady=5)
-email_entry = tk.Entry(root, width=40)
-email_entry.pack(anchor="w", padx=10)
+# Leaderboard button (optional, inline)
+leaderboard_btn = tk.Button(top_frame, text="Show Leaderboard", command=show_leaderboard)
+leaderboard_btn.grid(row=0, column=4, padx=5, pady=2)
 
 # ---------- Main Content ----------
 frame = tk.Frame(root)
@@ -315,7 +326,7 @@ for idx, team_obj in enumerate(teams_list_sorted):
 # Right side: Selected teams list
 list_frame = tk.Frame(frame)
 list_frame.pack(side="right", fill="y")
-tk.Label(list_frame, text="Selected:").pack()
+tk.Label(list_frame, text="Selected Teams:").pack()
 listbox = tk.Listbox(list_frame, width=30)
 listbox.pack()
 
