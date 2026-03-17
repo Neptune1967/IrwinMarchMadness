@@ -1,3 +1,0 @@
-Bob,builder@gamil.com,PAID,Houston (2),Akron (12),Purdue (2),Texas (11),Santa Clara (10),High Point (12),Arkansas (4),Saint Mary's (7),North Dakota St. (14),Wisconsin (5)
-Sam,Broke@mail,PAID,Kansas (4),Houston (2),Alabama (4),Nebraska (4),NC State (11),Arkansas (4),Saint Mary's (7),Tennessee (6),Miami (FL) (7),Texas Tech (5)
-JILL,asdasd,PAID,Virginia (3),Lehigh (16),Iowa St. (2),Alabama (4),Michigan (1),Queens (N.C.) (15),Santa Clara (10),Long Island (16),Kennesaw St. (14),Hawaii (13)

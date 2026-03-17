@@ -1,5 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
+import tkinter as tk
+from tkinter import messagebox
+import csv
 
 page_to_scrape = requests.get("https://www.ncaa.com/march-madness-live/bracket")
 
@@ -19,7 +22,6 @@ class Team:
     def __repr__(self):
         return f"{self.name} ({self.seed}) [{self.counter}]"
     
-
 
 soup = BeautifulSoup(page_to_scrape.text, "html.parser")
 
@@ -72,53 +74,7 @@ else:
 
 print(f"\nTotal teams stored: {len(teams_list)}")
 
-
-
-import csv
-
-# Create lookup dictionary
-team_lookup = {team.name: team for team in teams_list}
-
-leaderboard = []
-
-with open("records.txt", "r") as f:
-    reader = csv.reader(f)
-    for row in reader:
-        name = row[0]
-        email = row[1]
-        team_entries = row[2:]  # list of "Team Name (Seed)" strings
-        score = 0
-        for entry in team_entries:
-            if "(" in entry:
-                team_name = entry.rsplit("(", 1)[0].strip()  # "Houston"
-                # Lookup the Team object
-                team_obj = team_lookup.get(team_name)
-                if team_obj:
-                    score += (team_obj.seed + 3) * team_obj.counter
-        leaderboard.append((name, score))
-
-# Sort by score descending
-leaderboard.sort(key=lambda x: x[1], reverse=True)
-
-# Print leaderboard
-print("Leaderboard:")
-for rank, (name, score) in enumerate(leaderboard, start=1):
-    print(f"{rank}. {name} — {score} points")
-## Example string
-##text = "This is an example <!--[first]--> and another <!--[second]--> with extra <!--[third]< more."
-
-## Regular expression to find all characters between <!--[ and the next <
-
-
-## Print the matches
-#print(matches) 
-#####################################################
-import tkinter as tk
-from tkinter import messagebox
-import csv
-
 # ----------------- Use your actual teams_list from scraping -----------------
-# teams_list = [...]  <- This comes from your scraping code
 teams_list_sorted = sorted(teams_list, key=lambda t: t.seed)
 team_lookup = {team.name: team for team in teams_list}
 
@@ -333,10 +289,9 @@ def show_emails():
 # ----------------- GUI -----------------
 root = tk.Tk()
 root.title("March Madness Selector")
-root.geometry("900x720")
+root.geometry("905x720")
 
 # ---------- Top Section ----------
-# Top frame for Record Name, Email, Checkbox, Leaderboard, Save
 top_frame = tk.Frame(root)
 top_frame.pack(anchor="w", padx=10, pady=5)
 
@@ -393,8 +348,13 @@ for idx, team_obj in enumerate(teams_list_sorted):
 list_frame = tk.Frame(frame)
 list_frame.pack(side="right", fill="y")
 tk.Label(list_frame, text="Selected Teams:").pack()
+
 listbox = tk.Listbox(list_frame, width=30)
 listbox.pack()
+
+# Text under the selected teams
+selection_info = tk.Label(list_frame, text="Built by Isaac Bouwkamp.\nFree Bracket Entry for Isaac", fg="gray")
+selection_info.pack(pady=5)
 
 
 
