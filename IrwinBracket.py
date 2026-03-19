@@ -25,6 +25,13 @@ class Team:
 
 soup = BeautifulSoup(page_to_scrape.text, "html.parser")
 
+# ----------- ALL TEAM APPEARANCES (for scoring) -----------
+all_team_names = [
+    p.get_text(strip=True)
+    for p in soup.select("p.body.body_2")
+    if p.get_text(strip=True) and not p.get_text(strip=True).isdigit()
+]
+
 # ----------- TEAMS (unique, no scores) -----------
 teams = []
 seen = set()
@@ -62,8 +69,9 @@ for team, seed in zip(teams, seeds):
     teams_list.append(team_obj)
 
 team_lookup = {team.name: team for team in teams_list}
-# Build list of visible team names
-visible_team_names = teams.copy()
+
+
+visible_team_names = all_team_names
 
 # Identify play-in teams
 game_pods_teams = [p.get_text(strip=True)
@@ -330,7 +338,7 @@ employee_checkbox = tk.Checkbutton(top_frame, text="External User", variable=is_
 employee_checkbox.grid(row=0, column=4, padx=5, pady=2)
 
 # Paid checkbox (checked by default)
-is_paid_var = tk.BooleanVar(value=True)
+is_paid_var = tk.BooleanVar(value=False)
 paid_checkbox = tk.Checkbutton(top_frame, text="Paid", variable=is_paid_var)
 paid_checkbox.grid(row=0, column=5, padx=5, pady=2)
 
