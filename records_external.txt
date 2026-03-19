@@ -1,0 +1,2 @@
+Test,ing,PAID,Howard (16),Lehigh (11),SMU (16),VCU (11),UMBC (16),Long Island (16),Siena (16),NC State (16),Texas (11),Prairie View A&M (16)
+No negative,-,PAID,Duke (1),Michigan (1),Arizona (1),Purdue (2),Houston (2),Texas (11),UConn (2),Florida (1),Howard (16),Prairie View A&M (16)

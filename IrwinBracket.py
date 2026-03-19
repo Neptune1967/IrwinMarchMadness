@@ -25,26 +25,45 @@ class Team:
 
 soup = BeautifulSoup(page_to_scrape.text, "html.parser")
 
-# team names
-teams = [p.get_text(strip=True) for p in soup.select("p.body.body_2") if p.get_text(strip=True)]
+# ----------- TEAMS (unique, no scores) -----------
+teams = []
+seen = set()
 
-# seeds (only digits)
-seeds = [s.get_text(strip=True) for s in soup.select("span.overline") if s.get_text(strip=True).isdigit()]
+for p in soup.select("p.body.body_2"):
+    text = p.get_text(strip=True)
+    
+    # Skip scores
+    if not text or text.isdigit():
+        continue
+    
+    # Keep unique only
+    if text not in seen:
+        seen.add(text)
+        teams.append(text)
 
+# ----------- SEEDS (clean) -----------
+seeds = [
+    int(s.get_text(strip=True))
+    for s in soup.select("span.overline")
+    if s.get_text(strip=True).isdigit()
+]
 
+# ----------- TAKE FIRST 68 -----------
+teams = teams[:68]
+seeds = seeds[:68]
 # Print teams and seeds
-for team, seed in zip(teams, seeds):
-    print(f"{team} {seed}", end=", ")
+#for team, seed in zip(teams, seeds):
+    #print(f"{team} {seed}", end=", ")
 
 # Only take the first 68 teams and seeds
 teams_list = []
-for team, seed in zip(teams[:68], seeds[:68]):
-    team_obj = Team(team, int(seed))
+for team, seed in zip(teams, seeds):
+    team_obj = Team(team, seed)
     teams_list.append(team_obj)
 
 team_lookup = {team.name: team for team in teams_list}
 # Build list of visible team names
-visible_team_names = [team for team, seed in zip(teams[:68], seeds[:68])]
+visible_team_names = teams.copy()
 
 # Identify play-in teams
 game_pods_teams = [p.get_text(strip=True)
