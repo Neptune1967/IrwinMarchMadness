@@ -102,6 +102,10 @@ else:
 print(f"\nTotal teams stored: {len(teams_list)}")
 
 # ----------------- Use your actual teams_list from scraping -----------------
+# Alphabetical
+teams_list_sorted = sorted(teams_list, key=lambda t: t.name.lower())
+
+# OR by seed
 teams_list_sorted = sorted(teams_list, key=lambda t: t.seed)
 team_lookup = {team.name: team for team in teams_list}
 
@@ -363,13 +367,6 @@ button_frame.pack(side="left", fill="both", expand=True)
 
 buttons = []
 cols = 4
-for idx, team_obj in enumerate(teams_list_sorted):
-    b = tk.Button(button_frame, text=f"{team_obj.name} ({team_obj.seed})", width=20)
-    b.config(command=lambda t=team_obj, btn=b: toggle(t, btn))
-    row = idx // cols
-    col = idx % cols
-    b.grid(row=row, column=col, padx=5, pady=5, sticky="w")
-    buttons.append(b)
 
 # Right side: Selected teams list
 list_frame = tk.Frame(frame)
@@ -377,11 +374,49 @@ list_frame.pack(side="right", fill="y")
 tk.Label(list_frame, text="Selected Teams:").pack()
 
 listbox = tk.Listbox(list_frame, width=30)
-listbox.pack()
+listbox.pack(pady=5)
+
+# --- Sort dropdown variables and function ---
+sort_var = tk.StringVar(value="Seed")  # Define BEFORE refresh_buttons
+
+def refresh_buttons():
+    global buttons
+    for btn in buttons:
+        btn.destroy()
+    buttons = []
+
+    if sort_var.get().lower() == "alphabetical":
+        sorted_list = sorted(teams_list, key=lambda t: t.name.lower())
+    else:
+        sorted_list = sorted(teams_list, key=lambda t: t.seed)
+
+    for idx, team_obj in enumerate(sorted_list):
+        b = tk.Button(button_frame, text=f"{team_obj.name} ({team_obj.seed})", width=20)
+        b.config(command=lambda t=team_obj, btn=b: toggle(t, btn))
+        if team_obj in selected:
+            b.config(relief="sunken", bg="lightblue")
+        row = idx // cols
+        col = idx % cols
+        b.grid(row=row, column=col, padx=5, pady=5, sticky="w")
+        buttons.append(b)
+
+# Create a small frame for the sort row
+sort_frame = tk.Frame(list_frame)
+sort_frame.pack(pady=(10, 10))  # spacing above/below
+
+# Sort label
+tk.Label(sort_frame, text="Sort By:").pack(side="left", padx=(0,5))
+
+# Sort dropdown
+sort_dropdown = tk.OptionMenu(sort_frame, sort_var, "Seed", "Alphabetical", command=lambda _: refresh_buttons())
+sort_dropdown.pack(side="left")
 
 # Text under the selected teams
 selection_info = tk.Label(list_frame, text="Built by Isaac Bouwkamp.\nFree Bracket Entry for Isaac", fg="gray")
 selection_info.pack(pady=5)
+
+# Initial button build
+refresh_buttons()
 
 
 

@@ -1,2 +1,2 @@
-Isaac Bouwkamp 2,isaac.bouwkamp@irwinseating.com,PAID,Houston (2),South Florida (11),Arkansas (4),Arizona (1),Vanderbilt (5),UConn (2),Alabama (4),BYU (6),St. John's (5),Iowa St. (2)
-Isaac Bouwkamp,isaac.bouwkamp@irwinseating.com,PAID,Virginia (3),Michigan St. (3),Vanderbilt (5),Texas Tech (5),Purdue (2),Illinois (3),Michigan (1),Gonzaga (3),Wisconsin (5),St. John's (5)
+SECOND,email,PAID,Houston (2),South Florida (11),Arkansas (4),Arizona (1),Vanderbilt (5),UConn (2),Alabama (4),BYU (6),St. John's (5),Iowa St. (2)
+MAIN,mail,PAID,Virginia (3),Michigan St. (3),Vanderbilt (5),Texas Tech (5),Purdue (2),Illinois (3),Michigan (1),Gonzaga (3),Wisconsin (5),St. John's (5)
