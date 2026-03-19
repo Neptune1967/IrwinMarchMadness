@@ -245,10 +245,10 @@ def show_leaderboard():
 
         unpaid_players = []
 
-        for filename, title in [("records_company.txt", "Company Employees"),
-                                ("records_external.txt", "External Users")]:
+        for filename, title in [("records_company.txt", "\— Irwin Employees —/"),
+                                ("records_external.txt", "\— Community Members —/")]:
 
-            text_widget.insert(tk.END, f"{title}:\n")
+            text_widget.insert(tk.END, f"{title}\n")
 
             paid_leaderboard = []
 
@@ -326,7 +326,7 @@ def show_emails():
     text_widget.delete("1.0", tk.END)
 
     for email in sorted(emails):
-        text_widget.insert(tk.END, f"{email}\n")
+        text_widget.insert(tk.END, f"{email}, \n")
 
     text_widget.config(state="disabled")
 # ----------------- GUI -----------------

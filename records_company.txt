@@ -2,3 +2,6 @@ SECOND,email,PAID,Houston (2),South Florida (11),Arkansas (4),Arizona (1),Vander
 MAIN,mail,PAID,Virginia (3),Michigan St. (3),Vanderbilt (5),Texas Tech (5),Purdue (2),Illinois (3),Michigan (1),Gonzaga (3),Wisconsin (5),St. John's (5)
 No negative,as,PAID,Duke (1),Howard (16),Texas (11),Prairie View A&M (16),Purdue (2),Houston (2),Arizona (1),UConn (2),Michigan (1),Florida (1)
 2 negative,s,PAID,Duke (1),NC State (16),Iowa St. (2),SMU (16),Purdue (2),Houston (2),Arizona (1),UConn (2),Michigan (1),Florida (1)
+Test Score,here,PAID,North Carolina (6),Louisville (6),BYU (6),Vanderbilt (5),Illinois (3),Michigan (1),High Point (12),Saint Mary's (7),TCU (9),Georgia (8)
+dfg,dfg,PAID,Kentucky (7),Georgia (8),Tennessee (6),Michigan (1),Houston (2),Iowa St. (2),Texas Tech (5),Virginia (3),Florida (1),Alabama (4)
+tre,ert,PAID,Saint Mary's (7),Clemson (8),Texas A&M (10),North Carolina (6),Iowa (9),Houston (2),Vanderbilt (5),Illinois (3),Florida (1),Nebraska (4)
