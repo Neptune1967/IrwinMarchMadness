@@ -3,8 +3,21 @@ import requests
 import tkinter as tk
 from tkinter import messagebox
 import csv
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+import time
 
-page_to_scrape = requests.get("https://www.ncaa.com/march-madness-live/bracket")
+options = Options()
+options.add_argument("--headless")  # optional (runs in background)
+
+driver = webdriver.Chrome(options=options)
+driver.get("https://www.ncaa.com/march-madness-live/bracket")
+
+time.sleep(5)  # wait for page to fully load
+
+soup = BeautifulSoup(driver.page_source, "html.parser")
+
+#page_to_scrape = requests.get("https://www.ncaa.com/march-madness-live/bracket")
 
 class Player:
     def __init__(self, name, email, teams, paid=True):
@@ -23,7 +36,7 @@ class Team:
         return f"{self.name} ({self.seed}) [{self.counter}]"
     
 
-soup = BeautifulSoup(page_to_scrape.text, "html.parser")
+#soup = BeautifulSoup(page_to_scrape.text, "html.parser")
 
 # ----------- ALL TEAM APPEARANCES (for scoring) -----------
 all_team_names = [
@@ -32,44 +45,43 @@ all_team_names = [
     if p.get_text(strip=True) and not p.get_text(strip=True).isdigit()
 ]
 
-# ----------- TEAMS (unique, no scores) -----------
-teams = []
+teams_list = []
+team_lookup = {}
 seen = set()
 
-for p in soup.select("p.body.body_2"):
-    text = p.get_text(strip=True)
-    
-    # Skip scores
-    if not text or text.isdigit():
+# Each team "card" contains BOTH name + seed
+team_cards = soup.select("div.team, div.opponent, div.participant")
+
+for card in team_cards:
+    name_el = card.select_one("p.body.body_2")
+    seed_el = card.select_one("span.overline")
+
+    if not name_el or not seed_el:
         continue
-    
-    # Keep unique only
-    if text not in seen:
-        seen.add(text)
-        teams.append(text)
 
-# ----------- SEEDS (clean) -----------
-seeds = [
-    int(s.get_text(strip=True))
-    for s in soup.select("span.overline")
-    if s.get_text(strip=True).isdigit()
-]
+    team_name = name_el.get_text(strip=True)
+    seed_text = seed_el.get_text(strip=True)
 
-# ----------- TAKE FIRST 68 -----------
-teams = teams[:68]
-seeds = seeds[:68]
-# Print teams and seeds
-#for team, seed in zip(teams, seeds):
-    #print(f"{team} {seed}", end=", ")
+    if not team_name or not seed_text.isdigit():
+        continue
 
-# Only take the first 68 teams and seeds
-teams_list = []
-for team, seed in zip(teams, seeds):
-    team_obj = Team(team, seed)
+    if team_name in seen:
+        continue
+
+    seen.add(team_name)
+
+    team_obj = Team(team_name, int(seed_text))
     teams_list.append(team_obj)
+    team_lookup[team_name] = team_obj
 
-team_lookup = {team.name: team for team in teams_list}
+    if len(teams_list) == 68:
+        break
 
+print(len(soup.select("p.body.body_2")))
+
+for team in teams_list:
+    if team.seed < 1 or team.seed > 16:
+        print("BAD SEED:", team)
 
 visible_team_names = all_team_names
 

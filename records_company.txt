@@ -1,2 +1,4 @@
 SECOND,email,PAID,Houston (2),South Florida (11),Arkansas (4),Arizona (1),Vanderbilt (5),UConn (2),Alabama (4),BYU (6),St. John's (5),Iowa St. (2)
 MAIN,mail,PAID,Virginia (3),Michigan St. (3),Vanderbilt (5),Texas Tech (5),Purdue (2),Illinois (3),Michigan (1),Gonzaga (3),Wisconsin (5),St. John's (5)
+No negative,as,PAID,Duke (1),Howard (16),Texas (11),Prairie View A&M (16),Purdue (2),Houston (2),Arizona (1),UConn (2),Michigan (1),Florida (1)
+2 negative,s,PAID,Duke (1),NC State (16),Iowa St. (2),SMU (16),Purdue (2),Houston (2),Arizona (1),UConn (2),Michigan (1),Florida (1)
