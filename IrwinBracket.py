@@ -1,19 +1,31 @@
 from bs4 import BeautifulSoup
-import requests
-import tkinter as tk
-from tkinter import messagebox
+import requests 
+import tkinter as tk 
+from tkinter import messagebox 
 import csv
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-import time
+from webdriver_manager.chrome import ChromeDriverManager  # auto-downloads correct ChromeDriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 options = Options()
-options.add_argument("--headless")  # optional (runs in background)
+options.add_argument("--headless")
+options.add_argument("--disable-gpu")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
 
-driver = webdriver.Chrome(options=options)
+driver = webdriver.Chrome(
+    service=Service(ChromeDriverManager().install()),
+    options=options
+)
 driver.get("https://www.ncaa.com/march-madness-live/bracket")
 
-time.sleep(5)  # wait for page to fully load
+WebDriverWait(driver, 15).until(
+    EC.presence_of_element_located((By.CSS_SELECTOR, "p.body.body_2"))
+)
 
 soup = BeautifulSoup(driver.page_source, "html.parser")
 
